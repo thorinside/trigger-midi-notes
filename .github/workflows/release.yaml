@@ -1,0 +1,52 @@
+name: Build and Release Trigger MIDI Notes Plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install ARM toolchain
+        run: |
+          brew update
+          brew install --cask gcc-arm-embedded
+
+      - name: Verify installation
+        run: |
+          arm-none-eabi-g++ --version
+
+      - name: Build plugin
+        run: |
+          make clean
+          make hardware
+
+      - name: Prepare release archive
+        run: |
+          mkdir -p release/programs/plug-ins
+          cp plugins/trigger_midi_notes.o release/programs/plug-ins/
+          cd release
+          zip -r ../trigger_midi_notes-plugin.zip programs
+          cd ..
+          echo "Created zip contents:"
+          unzip -l trigger_midi_notes-plugin.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: trigger_midi_notes-plugin.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
