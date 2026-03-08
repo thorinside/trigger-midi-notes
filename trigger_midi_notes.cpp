@@ -218,7 +218,7 @@ static const _NT_factory factory = {
 uintptr_t pluginEntry(_NT_selector selector, uint32_t data) {
 	switch (selector) {
 	case kNT_selector_version:
-		return kNT_apiVersion10;
+		return kNT_apiVersionCurrent;
 	case kNT_selector_numFactories:
 		return 1;
 	case kNT_selector_factoryInfo:
